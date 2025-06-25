@@ -11,7 +11,6 @@ import top.orosirian.test.common.service.UserService;
 public class TestConsumer {
 
     public static void main(String[] args) throws InterruptedException {
-        JSON.config(JSONReader.Feature.SupportClassForName);
         ClientProxy clientProxy = new ClientProxy();
         UserService proxy = clientProxy.getProxy(UserService.class);
 

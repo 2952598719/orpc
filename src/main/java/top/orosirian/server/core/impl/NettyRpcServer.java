@@ -1,5 +1,7 @@
 package top.orosirian.server.core.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONReader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -16,6 +18,10 @@ public class NettyRpcServer implements RpcServer {
     private NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);  // 监听接受请求，分配给workGroup
 
     private NioEventLoopGroup workGroup = new NioEventLoopGroup();            // 处理实际业务
+
+    public NettyRpcServer() {
+        JSON.config(JSONReader.Feature.SupportClassForName);
+    }
 
     @Override
     public void start(int port) {

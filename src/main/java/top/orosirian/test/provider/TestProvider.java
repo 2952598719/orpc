@@ -13,7 +13,6 @@ import top.orosirian.server.core.RpcServer;
 public class TestProvider {
 
     public static void main(String[] args) {
-        JSON.config(JSONReader.Feature.SupportClassForName);
         UserService userService = new UserServiceImpl();
         ServiceRegister serviceRegister = ZKServiceRegister.getInstance();
         serviceRegister.register(userService);

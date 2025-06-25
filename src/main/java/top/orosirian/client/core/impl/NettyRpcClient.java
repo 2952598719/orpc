@@ -1,5 +1,7 @@
 package top.orosirian.client.core.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONReader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -30,6 +32,7 @@ public class NettyRpcClient implements RpcClient {
     private ServiceDiscoverer serviceDiscoverer;
 
     public NettyRpcClient() throws InterruptedException {
+        JSON.config(JSONReader.Feature.SupportClassForName);
         serviceDiscoverer = new ZKServiceDiscoverer();
     }
 
