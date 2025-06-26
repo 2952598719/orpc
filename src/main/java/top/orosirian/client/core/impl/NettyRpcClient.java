@@ -6,7 +6,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class NettyRpcClient implements RpcClient {
     // netty的线程模型核心，相当于一个线程池，管理一组EventLoop（默认2*CPU核数）
     private static final EventLoopGroup eventLoopGroup;
 
-    private ServiceDiscoverer serviceDiscoverer;
+    private final ServiceDiscoverer serviceDiscoverer;
 
     public NettyRpcClient() throws InterruptedException {
         JSON.config(JSONReader.Feature.SupportClassForName);
@@ -37,7 +38,7 @@ public class NettyRpcClient implements RpcClient {
     }
 
     static {
-        eventLoopGroup = new NioEventLoopGroup();                       // 线程组，也就是收发网络请求的“工人”，默认有CPU核数*2（IO密集型）
+        eventLoopGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());                       // 线程组，也就是收发网络请求的“工人”，默认有CPU核数*2（IO密集型）
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)                          // 指定线程组
                 .channel(NioSocketChannel.class)    // 指定通道类型为Nio
@@ -46,9 +47,9 @@ public class NettyRpcClient implements RpcClient {
 
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
-        InetSocketAddress addr = serviceDiscoverer.discoverService(request.getInterfaceName());
-        String host = addr.getHostName();
-        int port = addr.getPort();
+        InetSocketAddress address = serviceDiscoverer.discoverService(request.getInterfaceName());
+        String host = address.getHostName();
+        int port = address.getPort();
         try {
             // bootstrap.connect是个异步行为，所以返回ChannelFuture，在执行完成后可以通过.channel来获取连接
             // 所以要等待它创建完毕才能去获取channel，因此要使用.sync来同步（用人话说也就是阻塞在那，直到connect完毕）

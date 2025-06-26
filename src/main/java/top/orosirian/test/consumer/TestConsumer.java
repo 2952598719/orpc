@@ -1,7 +1,5 @@
 package top.orosirian.test.consumer;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONReader;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.client.proxy.ClientProxy;
 import top.orosirian.test.common.pojo.User;
@@ -13,13 +11,13 @@ public class TestConsumer {
     public static void main(String[] args) throws InterruptedException {
         ClientProxy clientProxy = new ClientProxy();
         UserService proxy = clientProxy.getProxy(UserService.class);
-
+        
         User user = proxy.getUserByUserId(1);
         log.info("从服务端得到的user=" + user);
 
         User u = User.builder().id(100).userName("wxx").sex(true).build();
         Integer id = proxy.insertUser(u);
-        log.info("向服务端插入user的id" + id);
+        log.info("向服务端插入user的id " + id);
 
     }
 }

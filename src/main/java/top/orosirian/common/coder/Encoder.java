@@ -9,17 +9,18 @@ import top.orosirian.common.message.RpcRequest;
 import top.orosirian.common.message.RpcResponse;
 import top.orosirian.common.serializer.Serializer;
 
+@SuppressWarnings("rawtypes")
 @Slf4j
 public class Encoder extends MessageToByteEncoder {
 
-    private Serializer serializer;
+    private final Serializer serializer;
 
     public Encoder(Serializer serializer) {
         this.serializer = serializer;
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) {
         log.debug("正在编码消息类型: {}", msg.getClass());
         // 0.得到数据
         byte[] serializeBytes = serializer.serialize(msg);

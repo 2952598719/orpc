@@ -20,8 +20,7 @@ public class SimpleRCPServer implements RpcServer {
 
     @Override
     public void start(int port) {
-        try {
-            ServerSocket serverSocket = new ServerSocket(port);
+        try(ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("[] 服务器已启动");
             while(true) {
                 Socket socket = serverSocket.accept();  // 阻塞到有连接
@@ -42,9 +41,9 @@ public class SimpleRCPServer implements RpcServer {
 @Slf4j
 class WorkThread implements Runnable {
 
-    private Socket socket;
+    private final Socket socket;
 
-    private ServiceRegister serviceRegister = ZKServiceRegister.getInstance();
+    private final ServiceRegister serviceRegister = ZKServiceRegister.getInstance();
 
     public WorkThread(Socket socket) {
         this.socket = socket;

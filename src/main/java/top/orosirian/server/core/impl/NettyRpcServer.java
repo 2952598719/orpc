@@ -4,7 +4,9 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONReader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.server.core.RpcServer;
@@ -15,9 +17,9 @@ public class NettyRpcServer implements RpcServer {
 
     private ChannelFuture channelFuture;
 
-    private NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);  // 监听接受请求，分配给workGroup
-
-    private NioEventLoopGroup workGroup = new NioEventLoopGroup();            // 处理实际业务
+    private EventLoopGroup bossGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());  // 监听接受请求，分配给workGroup
+    
+    private EventLoopGroup workGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());            // 处理实际业务
 
     public NettyRpcServer() {
         JSON.config(JSONReader.Feature.SupportClassForName);
@@ -25,8 +27,8 @@ public class NettyRpcServer implements RpcServer {
 
     @Override
     public void start(int port) {
-        bossGroup = new NioEventLoopGroup();
-        workGroup = new NioEventLoopGroup();
+        bossGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
+        workGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         log.info("Netty服务端启动中...");
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();

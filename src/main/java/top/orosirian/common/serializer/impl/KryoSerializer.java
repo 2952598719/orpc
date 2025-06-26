@@ -6,14 +6,13 @@ import com.esotericsoftware.kryo.io.Output;
 import top.orosirian.common.SerializeException;
 import top.orosirian.common.Utils;
 import top.orosirian.common.serializer.Serializer;
-import top.orosirian.test.common.pojo.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 public class KryoSerializer implements Serializer {
 
-    private Kryo kryo;
+    private final Kryo kryo;
 
     public KryoSerializer() {
         kryo = new Kryo();

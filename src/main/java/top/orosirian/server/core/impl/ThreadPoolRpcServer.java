@@ -1,5 +1,6 @@
 package top.orosirian.server.core.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import top.orosirian.server.core.RpcServer;
 
 import java.io.IOException;
@@ -9,9 +10,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class ThreadPoolRpcServer implements RpcServer {
 
-    private ThreadPoolExecutor threadPool;
+    private final ThreadPoolExecutor threadPool;
 
     public ThreadPoolRpcServer() {
         threadPool = new ThreadPoolExecutor(
@@ -26,14 +28,13 @@ public class ThreadPoolRpcServer implements RpcServer {
     @Override
     public void start(int port) {
         System.out.println("[] 服务端已启动");
-        try {
-            ServerSocket serverSocket = new ServerSocket();
+        try(ServerSocket serverSocket = new ServerSocket()) {
             while(true) {
                 Socket socket = serverSocket.accept();
                 threadPool.execute(new WorkThread(socket));
             }
         } catch(IOException e) {
-            e.printStackTrace();
+            log.info("服务端启动失败");
         }
     }
 
