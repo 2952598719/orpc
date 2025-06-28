@@ -19,5 +19,6 @@ public class TestConsumer {
         Integer id = proxy.insertUser(u);
         log.info("向服务端插入user的id " + id);
 
+        clientProxy.stop();
     }
 }

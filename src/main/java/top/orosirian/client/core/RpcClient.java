@@ -7,4 +7,6 @@ public interface RpcClient {
 
     RpcResponse sendRequest(RpcRequest request);
 
+    void stop();
+
 }

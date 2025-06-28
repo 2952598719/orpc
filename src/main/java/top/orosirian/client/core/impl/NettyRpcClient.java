@@ -25,24 +25,21 @@ public class NettyRpcClient implements RpcClient {
 
     // 不要一看到bootstrap就吓得屁滚尿流，这里就是个配置器而已，不是操作系统那个bootstrap
     // 把配置参数传进去之后拿来创建连接，没什么神奇高深作用
-    private static final Bootstrap bootstrap;
+    private static Bootstrap bootstrap;
 
     // netty的线程模型核心，相当于一个线程池，管理一组EventLoop（默认2*CPU核数）
-    private static final EventLoopGroup eventLoopGroup;
+    private static EventLoopGroup eventLoopGroup;
 
     private final ServiceDiscoverer serviceDiscoverer;
 
     public NettyRpcClient() throws InterruptedException {
         JSON.config(JSONReader.Feature.SupportClassForName);
         serviceDiscoverer = new ZKServiceDiscoverer();
-    }
-
-    static {
         eventLoopGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());                       // 线程组，也就是收发网络请求的“工人”，默认有CPU核数*2（IO密集型）
         bootstrap = new Bootstrap()
-                .group(eventLoopGroup)                          // 指定线程组
-                .channel(NioSocketChannel.class)    // 指定通道类型为Nio
-                .handler(new Initializer());         // 指定一个请求进出时经过的流程
+                .group(eventLoopGroup)                  // 指定线程组
+                .channel(NioSocketChannel.class)        // 指定通道类型为Nio
+                .handler(new Initializer());            // 指定一个请求进出时经过的流程
     }
 
     @Override
@@ -55,7 +52,7 @@ public class NettyRpcClient implements RpcClient {
             // 所以要等待它创建完毕才能去获取channel，因此要使用.sync来同步（用人话说也就是阻塞在那，直到connect完毕）
             ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
             Channel channel = channelFuture.channel();  // channel类似于socket
-            // 发送请求
+            // 发送请求，进入到Initializer流程处理
             channel.writeAndFlush(request);
             // 通道获取完数据才会将其转换为对象，此时才能从中获取，所以要阻塞
             channel.closeFuture().sync();
@@ -76,5 +73,9 @@ public class NettyRpcClient implements RpcClient {
         return RpcResponse.fail("请求失败");
     }
 
+    @Override
+    public void stop() {
+        eventLoopGroup.shutdownGracefully();
+    }
 
 }

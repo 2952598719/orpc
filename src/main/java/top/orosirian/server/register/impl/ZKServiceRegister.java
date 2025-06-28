@@ -15,39 +15,36 @@ import java.util.Map;
 @Slf4j
 public class ZKServiceRegister implements ServiceRegister {
 
-    private final String ZK_ADDRESS = "localhost:2181";
+    private static final String ZK_ADDRESS = "localhost:2181";
 
-    private final String ROOT_PATH = "ORPC";
+    private static final String ROOT_PATH = "ORPC";
 
-    private static String host = "127.0.0.1";
+    private static final String host = "127.0.0.1";
 
-    private static int port = 9999;
+    private static final int port = 9999;
 
-    private Map<String, Object> serviceMap;     // 服务接口名 -> 服务实例
+    private final Map<String, Object> serviceMap;     // 服务接口名 -> 服务实例
 
-    private CuratorFramework zkClient;
+    private final CuratorFramework zkClient;
 
     private static volatile ZKServiceRegister instance = null;
 
-    public ZKServiceRegister(String host, int port) {
-        ZKServiceRegister.host = host;
-        ZKServiceRegister.port = port;
+    public ZKServiceRegister() {
         this.serviceMap = new HashMap<>();
         this.zkClient = CuratorFrameworkFactory.builder()
                 .connectString(ZK_ADDRESS)
                 .sessionTimeoutMs(40000)    // Server和zk的连接session在40s没通信后关闭
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-                .namespace(ROOT_PATH)
+                .namespace(ROOT_PATH)   // server和client指定相同的namespace，这样才能获取对应的服务地址
                 .build();
         this.zkClient.start();
     }
 
     public static ZKServiceRegister getInstance() {
-        // 获取单例
         if (instance == null) {
             synchronized (ZKServiceRegister.class) {
                 if (instance == null) {
-                    instance = new ZKServiceRegister(host, port);
+                    instance = new ZKServiceRegister();
                 }
             }
         }
@@ -79,6 +76,7 @@ public class ZKServiceRegister implements ServiceRegister {
             // zk理解成一个文件夹就好
             // 比如说先create一个/service，接着create一个/service/a，create一个/service/b，那么此时的结构就是service下有a和b两个节点
             // 不要理解成map的形式，不会相互覆盖
+            // 这里的path就是相对于namespace的，可以理解成每个zkClient对应一个文件夹，无论如何都是在这个文件夹底下的路径
             String path = "/" + serviceName + "/" + Utils.addressToString(address);
             if(zkClient.checkExists().forPath(path) != null) {  // zk没有类似于python中的exist_ok=True，还是要判断一下，不然会报错
                 log.warn("服务注册失败，服务名：{}，地址：{}，原因：节点已存在", serviceName, address);

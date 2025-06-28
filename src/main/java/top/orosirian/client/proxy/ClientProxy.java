@@ -41,4 +41,8 @@ public class ClientProxy implements InvocationHandler {
         return (T)o;
     }
 
+    public void stop() {
+        rpcClient.stop();
+    }
+
 }

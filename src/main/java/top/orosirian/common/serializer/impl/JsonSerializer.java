@@ -23,7 +23,7 @@ public class JsonSerializer implements Serializer {
         if (bytes == null || bytes.length == 0) {
             throw new IllegalArgumentException("反序列化数组不能为空");
         }
-        Object obj = null;
+        Object obj;
         switch (messageType) {
             case 0:         // Request
                 RpcRequest request = JSON.parseObject(bytes, RpcRequest.class);
@@ -48,8 +48,8 @@ public class JsonSerializer implements Serializer {
                 RpcResponse response = JSON.parseObject(bytes, RpcResponse.class);
                 Class<?> dataType = response.getDataType();
                 Object data = response.getData();
-                if(dataType.isAssignableFrom(data.getClass())) {
-
+                if (dataType.isAssignableFrom(data.getClass())) {
+                    log.info("可进行类型转换");
                 } else {
                     if(data instanceof JSONObject) {
                         response.setData(JSONObject.toJavaObject((JSONObject)data, dataType));
