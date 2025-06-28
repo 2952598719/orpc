@@ -11,6 +11,7 @@ import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
+import top.orosirian.client.cache.ZKWatcher;
 import top.orosirian.client.core.RpcClient;
 import top.orosirian.client.discoverer.ServiceDiscoverer;
 import top.orosirian.client.discoverer.impl.ZKServiceDiscoverer;
@@ -32,14 +33,28 @@ public class NettyRpcClient implements RpcClient {
 
     private final ServiceDiscoverer serviceDiscoverer;
 
-    public NettyRpcClient() throws InterruptedException {
+    private static volatile NettyRpcClient instance = null;
+
+    private NettyRpcClient() {
         JSON.config(JSONReader.Feature.SupportClassForName);
-        serviceDiscoverer = new ZKServiceDiscoverer();
+        serviceDiscoverer = ZKServiceDiscoverer.getInstance();
+        ZKWatcher.getInstance().watchToUpdate();
         eventLoopGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());                       // 线程组，也就是收发网络请求的“工人”，默认有CPU核数*2（IO密集型）
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)                  // 指定线程组
                 .channel(NioSocketChannel.class)        // 指定通道类型为Nio
                 .handler(new Initializer());            // 指定一个请求进出时经过的流程
+    }
+
+    public static NettyRpcClient getInstance() {
+        if(instance == null) {
+            synchronized (NettyRpcClient.class) {
+                if(instance == null) {
+                    instance = new NettyRpcClient();
+                }
+            }
+        }
+        return instance;
     }
 
     @Override

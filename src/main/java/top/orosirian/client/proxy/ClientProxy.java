@@ -15,8 +15,8 @@ public class ClientProxy implements InvocationHandler {
 
     private final RpcClient rpcClient;
 
-    public ClientProxy() throws InterruptedException {
-        this.rpcClient = new NettyRpcClient();
+    public ClientProxy() {
+        this.rpcClient = NettyRpcClient.getInstance();
     }
 
     @Override

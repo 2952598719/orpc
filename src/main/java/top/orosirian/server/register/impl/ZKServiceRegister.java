@@ -29,7 +29,7 @@ public class ZKServiceRegister implements ServiceRegister {
 
     private static volatile ZKServiceRegister instance = null;
 
-    public ZKServiceRegister() {
+    private ZKServiceRegister() {
         this.serviceMap = new HashMap<>();
         this.zkClient = CuratorFrameworkFactory.builder()
                 .connectString(ZK_ADDRESS)

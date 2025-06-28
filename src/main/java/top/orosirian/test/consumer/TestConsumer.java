@@ -8,7 +8,7 @@ import top.orosirian.test.common.service.UserService;
 @Slf4j
 public class TestConsumer {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         ClientProxy clientProxy = new ClientProxy();
         UserService proxy = clientProxy.getProxy(UserService.class);
         

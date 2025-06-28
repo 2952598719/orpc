@@ -12,7 +12,7 @@ public class TestProvider {
         ServiceRegister serviceRegister = ZKServiceRegister.getInstance();
         serviceRegister.register(new UserServiceImpl());    // 服务说到底就是接口+具体实现
 
-        RpcServer rpcServer = new NettyRpcServer();
+        RpcServer rpcServer = NettyRpcServer.getInstance();
         rpcServer.start();  // stop不知道在哪插进去
     }
 

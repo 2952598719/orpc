@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.server.core.RpcServer;
 import top.orosirian.server.netty.Initializer;
+import top.orosirian.server.register.impl.ZKServiceRegister;
 
 @Slf4j
 public class NettyRpcServer implements RpcServer {
@@ -25,7 +26,9 @@ public class NettyRpcServer implements RpcServer {
 
     private final ServerBootstrap serverBootstrap;
 
-    public NettyRpcServer() {
+    private static volatile NettyRpcServer instance = null;
+
+    private NettyRpcServer() {
         JSON.config(JSONReader.Feature.SupportClassForName);    // 否则fastjson会报错
         bossGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());   // 类似线程池，其中的线程监听接受请求，分配给workGroup
         workGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());  // 处理实际业务
@@ -33,6 +36,17 @@ public class NettyRpcServer implements RpcServer {
                                 .group(bossGroup, workGroup)
                                 .channel(NioServerSocketChannel.class)
                                 .childHandler(new Initializer());
+    }
+
+    public static NettyRpcServer getInstance() {
+        if (instance == null) {
+            synchronized (ZKServiceRegister.class) {
+                if (instance == null) {
+                    instance = new NettyRpcServer();
+                }
+            }
+        }
+        return instance;
     }
 
     @Override
