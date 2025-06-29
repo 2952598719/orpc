@@ -13,8 +13,8 @@ import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.client.cache.ZKWatcher;
 import top.orosirian.client.core.RpcClient;
-import top.orosirian.client.discoverer.ServiceDiscoverer;
-import top.orosirian.client.discoverer.impl.ZKServiceDiscoverer;
+import top.orosirian.client.discoverer.Discoverer;
+import top.orosirian.client.discoverer.impl.ZKDiscoverer;
 import top.orosirian.client.netty.Initializer;
 import top.orosirian.common.message.RpcRequest;
 import top.orosirian.common.message.RpcResponse;
@@ -31,13 +31,13 @@ public class NettyRpcClient implements RpcClient {
     // netty的线程模型核心，相当于一个线程池，管理一组EventLoop（默认2*CPU核数）
     private static EventLoopGroup eventLoopGroup;
 
-    private final ServiceDiscoverer serviceDiscoverer;
+    private final Discoverer discoverer;
 
     private static volatile NettyRpcClient instance = null;
 
     private NettyRpcClient() {
         JSON.config(JSONReader.Feature.SupportClassForName);
-        serviceDiscoverer = ZKServiceDiscoverer.getInstance();
+        discoverer = ZKDiscoverer.getInstance();
         ZKWatcher.getInstance().watchToUpdate();
         eventLoopGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());                       // 线程组，也就是收发网络请求的“工人”，默认有CPU核数*2（IO密集型）
         bootstrap = new Bootstrap()
@@ -59,7 +59,7 @@ public class NettyRpcClient implements RpcClient {
 
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
-        InetSocketAddress address = serviceDiscoverer.discoverService(request.getInterfaceName());
+        InetSocketAddress address = discoverer.discoverService(request.getInterfaceName());
         String host = address.getHostName();
         int port = address.getPort();
         try {
@@ -90,7 +90,9 @@ public class NettyRpcClient implements RpcClient {
 
     @Override
     public void stop() {
+        discoverer.stop();  // 关闭zkClient
         eventLoopGroup.shutdownGracefully();
     }
+
 
 }

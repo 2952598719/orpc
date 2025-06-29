@@ -21,9 +21,9 @@ public class Initializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast(new Decoder());
             pipeline.addLast(new Handler());
             // <->主机
-            log.info("Netty 服务器 pipeline 以类型{}初始化", Serializer.getSerializer(3).toString());
+            log.info("Netty 服务器 pipeline 以类型{}初始化", Serializer.getSerializer(SerializerType.JSON_SERIALIZER.code).toString());
         } catch (Exception e) {
-            log.error("Error initializing Netty client pipeline", e);
+            log.error("初始化netty客户端pipeline失败", e);
             throw e;  // 重新抛出异常，确保管道初始化失败时处理正确
         }
     }

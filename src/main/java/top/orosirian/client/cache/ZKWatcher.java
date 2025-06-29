@@ -4,7 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.CuratorCache;
-import top.orosirian.client.discoverer.impl.ZKServiceDiscoverer;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
+import top.orosirian.client.discoverer.impl.ZKDiscoverer;
 
 @Slf4j
 public class ZKWatcher {
@@ -16,7 +17,7 @@ public class ZKWatcher {
     private static volatile ZKWatcher instance = null;
 
     private ZKWatcher() {
-        client = ZKServiceDiscoverer.getInstance().getZkClient();
+        client = ZKDiscoverer.getInstance().getZkClient();
         serviceCache = ServiceCache.getInstance();
         this.watchToUpdate();
     }
@@ -77,6 +78,7 @@ public class ZKWatcher {
                     break;
             }
         });
+        curatorCache.start();   // 这行别忘了，没有start它怎么会主动监听呢
     }
 
     public String[] parsePath(ChildData data) {

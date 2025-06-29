@@ -23,7 +23,7 @@ public class ZKServiceRegister implements ServiceRegister {
 
     private static final int port = 9999;
 
-    private final Map<String, Object> serviceMap;     // 服务接口名 -> 服务实例
+    Map<String, Object> serviceMap;
 
     private final CuratorFramework zkClient;
 
@@ -38,6 +38,9 @@ public class ZKServiceRegister implements ServiceRegister {
                 .namespace(ROOT_PATH)   // server和client指定相同的namespace，这样才能获取对应的服务地址
                 .build();
         this.zkClient.start();
+        zkClient.getConnectionStateListenable().addListener((client, newState) -> {
+            log.warn("ZooKeeper 连接状态变化: {}", newState);
+        });
     }
 
     public static ZKServiceRegister getInstance() {
@@ -55,8 +58,8 @@ public class ZKServiceRegister implements ServiceRegister {
     public void register(Object serviceImpl) {
         Class<?>[] interfaceClasses = serviceImpl.getClass().getInterfaces();
         for (Class<?> interfaceClass : interfaceClasses) {
-            localRegister(interfaceClass, serviceImpl);
-            remoteRegister(interfaceClass, new InetSocketAddress(host, port));
+            localRegister(interfaceClass.getName(), serviceImpl);
+            remoteRegister(interfaceClass.getName(), new InetSocketAddress(host, port));
             log.info("服务注册成功，服务名：{}，地址：{}", interfaceClass.getName(), Utils.addressToString(new InetSocketAddress(host, port)));
         }
     }
@@ -66,12 +69,11 @@ public class ZKServiceRegister implements ServiceRegister {
         return serviceMap.get(interfaceName);
     }
 
-    private void localRegister(Class<?> clazz, Object serviceImpl) {
-        serviceMap.put(clazz.getName(), serviceImpl);
+    private void localRegister(String serviceName, Object serviceImpl) {
+        serviceMap.put(serviceName, serviceImpl);
     }
 
-    private void remoteRegister(Class<?> clazz, InetSocketAddress address) {
-        String serviceName = clazz.getName();
+    private void remoteRegister(String serviceName, InetSocketAddress address) {
         try {
             // zk理解成一个文件夹就好
             // 比如说先create一个/service，接着create一个/service/a，create一个/service/b，那么此时的结构就是service下有a和b两个节点
@@ -79,7 +81,7 @@ public class ZKServiceRegister implements ServiceRegister {
             // 这里的path就是相对于namespace的，可以理解成每个zkClient对应一个文件夹，无论如何都是在这个文件夹底下的路径
             String path = "/" + serviceName + "/" + Utils.addressToString(address);
             if(zkClient.checkExists().forPath(path) != null) {  // zk没有类似于python中的exist_ok=True，还是要判断一下，不然会报错
-                log.warn("服务注册失败，服务名：{}，地址：{}，原因：节点已存在", serviceName, address);
+                log.warn("节点已存在，服务名：{}，地址：{}", serviceName, address);
                 return;
             }
             zkClient.create()

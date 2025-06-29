@@ -11,14 +11,15 @@ public class TestConsumer {
     public static void main(String[] args) {
         ClientProxy clientProxy = new ClientProxy();
         UserService proxy = clientProxy.getProxy(UserService.class);
-        
+
         User user = proxy.getUserByUserId(1);
-        log.info("从服务端得到的user=" + user);
+        log.info("从服务端得到的user=" + user.toString());
 
         User u = User.builder().id(100).userName("wxx").sex(true).build();
         Integer id = proxy.insertUser(u);
         log.info("向服务端插入user的id " + id);
-
         clientProxy.stop();
+
     }
+
 }

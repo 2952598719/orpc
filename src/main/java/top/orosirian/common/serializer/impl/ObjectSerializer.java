@@ -1,6 +1,5 @@
 package top.orosirian.common.serializer.impl;
 
-
 import top.orosirian.common.SerializeException;
 import top.orosirian.common.serializer.Serializer;
 

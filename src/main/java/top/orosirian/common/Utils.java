@@ -24,7 +24,9 @@ public class Utils {
     }
 
     public static String addressToString(InetSocketAddress serviceAddress) {
-        return serviceAddress.getHostName() + ":" + serviceAddress.getPort();
+        // InetSocketAddress会反向解析ip，getHostName就会将ip转换为主机名，而本机可能在host文件中就有docker加进去的127.0.0.1 kubernetes.docker.internal
+        // 所以，为了避免变成这样，还是用getHostString获取纯正的host
+        return serviceAddress.getHostString() + ":" + serviceAddress.getPort();
     }
 
     public static InetSocketAddress stringToAddress(String address) {

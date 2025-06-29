@@ -33,9 +33,9 @@ public class NettyRpcServer implements RpcServer {
         bossGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());   // 类似线程池，其中的线程监听接受请求，分配给workGroup
         workGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());  // 处理实际业务
         serverBootstrap = new ServerBootstrap()
-                                .group(bossGroup, workGroup)
-                                .channel(NioServerSocketChannel.class)
-                                .childHandler(new Initializer());
+                .group(bossGroup, workGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new Initializer());
     }
 
     public static NettyRpcServer getInstance() {
