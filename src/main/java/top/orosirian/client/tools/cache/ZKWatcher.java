@@ -1,10 +1,9 @@
-package top.orosirian.client.cache;
+package top.orosirian.client.tools.cache;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.CuratorCache;
-import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import top.orosirian.client.discoverer.impl.ZKDiscoverer;
 
 @Slf4j

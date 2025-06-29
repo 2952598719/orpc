@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.imps.DefaultACLProvider;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.data.Stat;
-import top.orosirian.client.cache.ServiceCache;
+import top.orosirian.client.discoverer.balance.LoadBalanceType;
+import top.orosirian.client.tools.cache.ServiceCache;
 import top.orosirian.client.discoverer.Discoverer;
+import top.orosirian.client.discoverer.balance.LoadBalance;
 import top.orosirian.common.Utils;
 import top.orosirian.server.register.impl.ZKServiceRegister;
 
@@ -27,6 +27,8 @@ public class ZKDiscoverer implements Discoverer {
 
     private ServiceCache serviceCache = null;
 
+    private LoadBalance loadBalance;
+
     private static volatile ZKDiscoverer instance = null;
 
     private ZKDiscoverer() {
@@ -41,6 +43,7 @@ public class ZKDiscoverer implements Discoverer {
             this.zkClient.blockUntilConnected();
             log.info("zookeeper连接成功");
             this.serviceCache = ServiceCache.getInstance();
+            this.loadBalance = LoadBalance.getLoadBalance(LoadBalanceType.CONSISTENT_HASH.code);
         } catch (InterruptedException e) {
             log.info("zookeeper连接失败");
         }
@@ -61,6 +64,7 @@ public class ZKDiscoverer implements Discoverer {
     public InetSocketAddress discoverService(String serviceName) {
         try {
             List<String> addressList;
+            // 地址缓存功能
             if (serviceCache.containService(serviceName)) {
                 log.warn("缓存中发现服务{}", serviceName);
                 addressList = serviceCache.getServiceAddressList(serviceName);
@@ -68,7 +72,9 @@ public class ZKDiscoverer implements Discoverer {
                 log.warn("缓存中未发现服务{}，从远程获取", serviceName);
                 addressList = zkClient.getChildren().forPath("/" + serviceName);
             }
-            return Utils.stringToAddress(addressList.get(0));    // 第一步暂无负载均衡
+            // 负载均衡功能
+            String servicePath = loadBalance.selectAddr(addressList);
+            return Utils.stringToAddress(servicePath);    // 第一步暂无负载均衡
         } catch(Exception e) {
             log.error("服务发现失败，服务名：{}", serviceName, e);
             return null;

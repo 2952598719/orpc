@@ -1,4 +1,4 @@
-package top.orosirian.client.cache;
+package top.orosirian.client.tools.cache;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +36,10 @@ public class ServiceCache {
 
     public void addServiceAddress(String serviceName, String serviceAddress) {
         if (containService(serviceName)) {
-            addressCache.get(serviceName).add(serviceAddress);
+            List<String> addressList = addressCache.get(serviceName);
+            if(!addressList.contains(serviceAddress)) {     // 没有才往里加，不然这个list就放重复了
+                addressList.add(serviceAddress);
+            }
         } else {
             List<String> addressList = new ArrayList<>();
             addressList.add(serviceAddress);
