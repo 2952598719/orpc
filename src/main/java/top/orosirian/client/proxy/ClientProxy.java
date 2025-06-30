@@ -2,7 +2,7 @@ package top.orosirian.client.proxy;
 
 import lombok.extern.slf4j.Slf4j;
 import top.orosirian.client.core.impl.NettyRpcClient;
-import top.orosirian.client.tools.retry.GuavaRetry;
+import top.orosirian.client.retry.GuavaRetry;
 import top.orosirian.common.Utils;
 import top.orosirian.common.message.RpcRequest;
 import top.orosirian.common.message.RpcResponse;

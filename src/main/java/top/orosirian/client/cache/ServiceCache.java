@@ -1,4 +1,4 @@
-package top.orosirian.client.tools.cache;
+package top.orosirian.client.cache;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,4 +1,4 @@
-package top.orosirian.client.tools.retry;
+package top.orosirian.client.retry;
 
 import com.github.rholder.retry.*;
 import lombok.extern.slf4j.Slf4j;
