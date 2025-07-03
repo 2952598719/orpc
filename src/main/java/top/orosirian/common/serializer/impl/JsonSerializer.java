@@ -48,6 +48,10 @@ public class JsonSerializer implements Serializer {
                 RpcResponse response = JSON.parseObject(bytes, RpcResponse.class);
                 Class<?> dataType = response.getDataType();
                 Object data = response.getData();
+                if (data == null) {
+                    log.warn("接收消息为空");
+                    return new Object();
+                }
                 if (dataType.isAssignableFrom(data.getClass())) {
                     log.info("可进行类型转换");
                 } else {

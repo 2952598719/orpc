@@ -15,7 +15,7 @@ import java.util.List;
 public class Decoder extends ByteToMessageDecoder {
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         // 0.检查数据长度是否足够
         if(in.readableBytes() < 8) {    // messageType-2，serializerType-2，length-4
             return;
